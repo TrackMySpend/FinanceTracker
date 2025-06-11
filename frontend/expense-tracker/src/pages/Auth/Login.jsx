@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import AuthLayout from '../../components/layouts/AuthLayout'
 import { Link, useNavigate } from 'react-router-dom';
 import Input from '../../components/Inputs/Input';
+import { validateEmail } from '../../utils/helper';
+
 
 
 const Login = () => {
@@ -14,23 +16,22 @@ const Login = () => {
 
   // hndle login
   const handleLogin = async (e) => {
+  e.preventDefault();
 
-    e.preventDefault();
-
-    if(!validateEmail(email)){
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    if(!password){
-      setError("Plese enter the password");
-    }
-
-    setError("");
-
-    //Login Api call
-
+  if (!validateEmail(email)) {
+    setError("Please enter a valid email address");
+    return;
   }
+
+  if (!password) {
+    setError("Please enter the password");
+    return; 
+  }
+
+  setError("");
+
+  // Login API call here...
+}
   return (
     <AuthLayout>
       <div className="flex items-center justify-start h-full w-full pl-16">
@@ -57,7 +58,12 @@ const Login = () => {
                type="password"
             />
 
-            {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
+             {error && (
+                 <p className="text-red-500 text-xs mt-1 mb-2">
+                    {error}
+                </p>
+             )}
+
 
             <button type="submit" className="btn-primary">
               LOGIN
