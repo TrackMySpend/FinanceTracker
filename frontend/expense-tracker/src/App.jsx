@@ -11,32 +11,28 @@ import SignUp from "./pages/Auth/SignUp";
 import Home from "./pages/Dashboard/Home";
 import Expense from "./pages/Dashboard/Expense";
 import Income from "./pages/Dashboard/Income";
-
+import UserProvider from "./context/userContext";
 
 const App = () => {
   return (
-    <div>
-      <Router>
+    <Router>
+      <UserProvider>
         <Routes>
           <Route path="/" element={<Root />} />
-          <Route path="/login" exact element={<Login />} />
-          <Route path="/signup" exact element={<SignUp />} />
-          <Route path="/dashboard" exact element={<Home />} />
-          <Route path="/income" exact element={<Income />} />
-          <Route path="/expense" exact element={<Expense />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/dashboard" element={<Home />} />
+          <Route path="/income" element={<Income />} />
+          <Route path="/expense" element={<Expense />} />
         </Routes>
-      </Router>
-    </div>
+      </UserProvider>
+    </Router>
   );
 };
+
 export default App;
+
 const Root = () => {
   const isAuthenticated = !!localStorage.getItem("token");
-  return isAuthenticated ? (
-    <Navigate to="/dashboard" />
-  ) : (
-    <Navigate to="/login" />
-  );
+  return isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />;
 };
-
-
