@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/deepika/Documents/cf",
-      "program": "/Users/deepika/Documents/cf/build/Debug/outDebug"
+      "cwd": "/Users/deepika/Documents/FinanceTracker/backend",
+      "program": "/Users/deepika/Documents/FinanceTracker/backend/build/Debug/outDebug"
     }
   ]
 }
