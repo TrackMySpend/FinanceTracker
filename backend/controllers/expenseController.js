@@ -1,18 +1,19 @@
 const xlsx = require('xlsx');
-const Income = require('../models/Income');
+const Expense = require('../models/Expense');
 const User = require('../models/User');
 
-exports.addIncome = async (req, res) => {
+
+exports.addExpense = async (req, res) => {
     try {
         // Check if user is authenticated
         if (!req.user || !req.user._id) {
             return res.status(401).json({ message: 'Not authorized, user not found' });
          }
 
-        const { icon, amount, source, date } = req.body;
+        const { icon, category, amount, date } = req.body;
 
         // Validate required fields
-        if (!amount || !source || !date) {
+        if (!amount || !category || !date) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
@@ -23,20 +24,20 @@ exports.addIncome = async (req, res) => {
         }
 
         // Create new income entry
-        const newIncome = new Income({
+        const newExpense = new Expense({
             userId: req.user._id,
             icon: icon || '',
+            category,
             amount: numericAmount,
-            source,
             date: new Date(date)
         });
 
         // Save to DB
-        await newIncome.save();
-        return res.status(201).json(newIncome);
+        await newExpense.save();
+        return res.status(201).json(newExpense);
 
     } catch (error) {
-        console.error('Add Income Error:', error);
+        console.error('Add Expense Error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
@@ -44,47 +45,48 @@ exports.addIncome = async (req, res) => {
 
 
 
-exports.getAllIncome = async (req, res) => {
+exports.getAllExpense = async (req, res) => {
     const userId = req.user.id;
     try {
         // Fetch all income entries for the authenticated user
-        const incomes = await Income.find({ userId }).sort({ date: -1 });
-        res.status(200).json(incomes);
+        const expense = await Expense.find({ userId }).sort({ date: -1 });
+        res.status(200).json(expense);
     } catch (error) {
-        console.error('Get All Income Error:', error);
+        console.error('Get All Expens e Error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
 
-exports.deleteIncome = async (req, res) => {
+exports.deleteExpense = async (req, res) => {
     const userId = req.user.id;
     try{
-        await Income.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: 'Income entry deleted successfully' }); 
+        await Expense.findByIdAndDelete(req.params.id);
+        res.status(200).json({ message: 'Expense entry deleted successfully' }); 
     }catch (error) {
-        console.error('Delete Income Error:', error);
+        console.error('Delete Expense Error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
-exports.downloadIncomeExcel = async (req, res) => {
+exports.downloadExpenseExcel = async (req, res) => {
     const userId = req.user.id;
     try{
-        const income= await Income.find({ userId }).sort({ date: -1 });
-        const data= income.map((item) => ({
-            Source: item.source,
+        const expense= await Expense.find({ userId }).sort({ date: -1 });
+        const data= expense.map((item) => ({
+            Category: item.category,
+
             Amount: item.amount,
             Date: item.date,
          }));
          const wb= xlsx.utils.book_new();
          const ws= xlsx.utils.json_to_sheet(data);
-         xlsx.utils.book_append_sheet(wb, ws, 'Income');
-         xlsx.writeFile(wb, 'income_details.xlsx');
-         res.download('income_details.xlsx');
+         xlsx.utils.book_append_sheet(wb, ws, 'expense');
+         xlsx.writeFile(wb, 'expense_details.xlsx');
+         res.download('expense_details.xlsx');
 
     }catch (error) {
-        console.error('Download Income Excel Error:', error);
+        console.error('Download Expense Excel Error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
