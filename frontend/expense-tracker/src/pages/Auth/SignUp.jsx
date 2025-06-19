@@ -6,8 +6,7 @@ import { validateEmail } from '../../utils/helper';
 import ProfilePhotoSelector from '../../components/Inputs/ProfilePhotoSelector';
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
-import { UserContext } from "../../context/userContext";
-import uploadImage from '../../utils/uploadImage';
+import { UserContext } from "../../context/UserContext";
 
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState(null);
@@ -21,23 +20,27 @@ const SignUp = () => {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
+
     if (!fullName) return setError("Please enter your name");
     if (!validateEmail(email)) return setError("Please enter a valid email address");
     if (!password) return setError("Please enter the password");
     setError("");
 
     try {
-      let profileImageUrl = "";
+      const formData = new FormData();
+      formData.append("fullName", fullName);
+      formData.append("email", email);
+      formData.append("password", password);
       if (profilePic) {
-        const imgUploadRes = await uploadImage(profilePic);
-        profileImageUrl = imgUploadRes.imageUrl || "";
+        formData.append("profileImage", profilePic); // key name must match multer config
       }
-      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
-        fullName,
-        email,
-        password,
-        profileImageUrl,
+
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+
       const { token, user } = response.data;
       if (token) {
         localStorage.setItem("token", token);
