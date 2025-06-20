@@ -2,7 +2,6 @@ import React from 'react'
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import { useState } from 'react';
 import IncomeOverview from '../../components/Income/IncomeOverview';
- // Adjust the path as needed
 import axiosInstance from '../../utils/axiosInstance'; // Adjust the path if needed
 import Modal from '../../components/Modal';
 import AddIncomeForm from '../../components/Income/AddIncomeForm'; // Adjust the path if needed
@@ -14,6 +13,7 @@ import { useUserAuth } from '../../hooks/useUserAuth'; // Adjust the path if nee
 import DeleteAlert from '../../components/DeleteAlert'; // Adjust the path if needed
 const Income = () => {  
    useUserAuth();
+
   const [incomeData, setIncomeData] = useState([]);
   const [loading, setLoading] = useState(false);
   const[openDeleteAlert,setOpenDeleteAlert]=useState({
@@ -40,6 +40,7 @@ const Income = () => {
     }
   };
 
+  // handle add income
   const handleAddIncome = async (income) => {
      const{source,amount,date,icon}=income;
      if(!source.trim()){
@@ -70,6 +71,7 @@ const Income = () => {
 
   };
 
+  // delete add income
   const deleteIncome = async (id) => {
     try{
       await axiosInstance.delete(API_PATHS.INCOME.DELETE_INCOME(id));
@@ -80,8 +82,30 @@ const Income = () => {
       console.error('error deleting income:', error.response?.data?.message || error.message);
   };
 }
+  // handle download income
+  const handleDownloadDeleteIncome = async() => {
+    try{
+      const response = await axiosInstance.get (
+        API_PATHS.INCOME.DOWNLOAD_INCOME,
+        {
+          responseType: "blob"
+        }
+      );
 
-  const handleDownloadDeleteIncome = async() => {};
+      const url = window.URL. createObjectURL(new Blob([response]));
+      const link = document. createElement("a");
+      link.href= url;
+      link.setAttribute("download", "income_details.xslx");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } 
+    catch(error){
+      console.log("Error downloading income details", error);
+      toast.error("Failed to download income details. Please try again later");
+    }
+  };
   
   useEffect(() => {
     fetchIncomeDetails();
