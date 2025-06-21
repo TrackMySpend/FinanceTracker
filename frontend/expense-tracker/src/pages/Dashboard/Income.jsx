@@ -11,6 +11,8 @@ import { useEffect } from 'react';
 import IncomeList from '../../components/Income/IncomeList'; 
 import { useUserAuth } from '../../hooks/useUserAuth'; // Adjust the path if needed
 import DeleteAlert from '../../components/DeleteAlert'; // Adjust the path if needed
+
+
 const Income = () => {  
    useUserAuth();
 

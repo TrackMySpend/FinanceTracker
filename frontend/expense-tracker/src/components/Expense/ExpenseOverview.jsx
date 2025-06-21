@@ -9,6 +9,8 @@ const ExpenseOverview = ({ transactions, onExpenseIncome }) => {
   useEffect(() => {
     const result = prepareExpenseLineChartData(transactions);
     setChartData(result);
+
+    return () => {};
   }, [transactions]);
 
   return (
@@ -20,7 +22,7 @@ const ExpenseOverview = ({ transactions, onExpenseIncome }) => {
             Track your spending trends over time and gain insights into where your money goes
           </p>
         </div>
-        <button className='add-btn' onClick={onExpenseIncome} aria-label="Add expense">
+        <button className='add-btn' onClick={onExpenseIncome}>
           <LuPlus className="text-lg" /> Add Expense
         </button>
       </div>

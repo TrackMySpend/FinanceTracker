@@ -30,7 +30,7 @@ const Expense = () => {
     setLoading(true);
 
     try {
-      const response = await axiosInstance.get(API_PATHS.EXPENSE.GET_ALL_EXPENSE);
+      const response = await axiosInstance.get( `${API_PATHS.EXPENSE.GET_ALL_EXPENSE}`);
 
       if (response.data) {
         setExpenseData(response.data);
@@ -68,8 +68,8 @@ const Expense = () => {
         date,
         icon,
       });
-      toast.success("Expense added successfully");
       setOpenAddExpenseModal(false);
+      toast.success("Expense added successfully");
       fetchExpenseDetails();
     } catch (error) {
       console.log("Error adding expense:", error.response?.data?.message || error.message);
