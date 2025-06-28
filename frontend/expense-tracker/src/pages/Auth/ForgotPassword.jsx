@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import AuthLayout from '../../components/layouts/AuthLayout';
 import axiosInstance from '../../utils/axiosInstance';
-
+import { API_PATHS } from '../../utils/apiPaths';
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const navigate = useNavigate();
@@ -14,7 +14,8 @@ const ForgotPassword = () => {
     if (!email) return toast.error("Email is required");
 
     try {
-      await axiosInstance.post('/auth/forgot-password', { email });
+     await axiosInstance.post(API_PATHS.AUTH.FORGOT_PASSWORD, { email });
+
       toast.success("Password reset link sent to your email.");
       navigate('/login');
     } catch (err) {
