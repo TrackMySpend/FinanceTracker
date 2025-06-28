@@ -33,12 +33,30 @@ export const addThousandsSeperator = (num) => {
     : formattedInteger;
 };
 
-export const prepareExpenseBarChartData=(data=[])=>{
-  const chartData=data.map((item) => ({
-    category: item?.category,
-    amount:item?.amount,
-  }));
-  return chartData;
+// export const prepareExpenseBarChartData=(data=[])=>{
+//   const chartData=data.map((item) => ({
+//     category: item?.category,
+//     amount:item?.amount,
+//   }));
+//   return chartData;
+// };
+export const prepareExpenseBarChartData = (data = []) => {
+  // 1. Create last 30 days as base
+  const last30Days = Array.from({ length: 30 }, (_, i) => {
+    const date = moment().subtract(29 - i, 'days').format('DD MMM');
+    return { date, amount: 0 };
+  });
+
+  // 2. Sum expenses by day
+  data.forEach((item) => {
+    const expenseDate = moment(item.date).format('DD MMM');
+    const day = last30Days.find((d) => d.date === expenseDate);
+    if (day) {
+      day.amount += item.amount;
+    }
+  });
+
+  return last30Days;
 };
 
 export const prepareIncomeBarChartData=(data=[])=>{
