@@ -1,9 +1,9 @@
-import React, { useState, useContext } from 'react';
-import AuthLayout from '../../components/layouts/AuthLayout';
-import { Link, useNavigate } from 'react-router-dom';
-import Input from '../../components/Inputs/Input';
-import { validateEmail } from '../../utils/helper';
-import ProfilePhotoSelector from '../../components/Inputs/ProfilePhotoSelector';
+import React, { useState, useContext } from "react";
+import AuthLayout from "../../components/layouts/AuthLayout";
+import { Link, useNavigate } from "react-router-dom";
+import Input from "../../components/Inputs/Input";
+import ProfilePhotoSelector from "../../components/Inputs/ProfilePhotoSelector";
+import { validateEmail } from "../../utils/helper";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
 import { UserContext } from "../../context/UserContext";
@@ -32,7 +32,7 @@ const SignUp = () => {
       formData.append("email", email);
       formData.append("password", password);
       if (profilePic) {
-        formData.append("profileImage", profilePic); // key name must match multer config
+        formData.append("profileImage", profilePic);
       }
 
       const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, formData, {
@@ -54,23 +54,117 @@ const SignUp = () => {
 
   return (
     <AuthLayout>
-      <div className="lg:w-[100%] h-auto md:h-full mt-10 md:mt-0 flex flex-col justify-center">
-        <h3 className="text-xl font-semibold text-black">Create an Account</h3>
-        <p className="text-xs text-slate-700 mt-[5px] mb-6">Join us today by entering your details below.</p>
-        <form onSubmit={handleSignUp}>
-          <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input value={fullName} onChange={({ target }) => setFullName(target.value)} label="Full Name" placeholder="John" type="text" />
-            <Input value={email} onChange={(e) => setEmail(e.target.value)} label="Email Address" placeholder="john@example.com" type="text" />
-            <div className="col-span-2">
-              <Input value={password} onChange={(e) => setPassword(e.target.value)} label="Password" placeholder="Min 8 characters" type="password" />
-            </div>
-          </div>
-          {error && <p className="text-red-500 text-xs mt-1 mb-2">{error}</p>}
-          <button type="submit" className="btn-primary">SIGN UP</button>
-          <p className="text-[13px] text-slate-800 mt-3">Already have an account? <Link className="font-medium text-primary underline" to="/login">Login</Link></p>
-        </form>
+      <div className="flex justify-center items-center min-h-screen px-4 py-10 bg-gradient-to-tr from-purple-400 via-indigo-500 to-pink-400">
+        <div className="w-full max-w-md bg-white bg-opacity-20 border border-white border-opacity-30 backdrop-filter backdrop-blur-lg rounded-3xl p-10 shadow-xl animate-floating glass-card">
+          <h3 className="text-4xl font-extrabold text-white mb-4 text-center drop-shadow-[0_2px_10px_rgba(255,255,255,0.3)]">
+            Create an Account
+          </h3>
+          <p className="text-sm text-white/90 mb-8 text-center font-medium drop-shadow">
+            Start your financial journey with us.
+          </p>
+
+          <form onSubmit={handleSignUp} className="space-y-6">
+            <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
+
+            <Input
+              value={fullName}
+              onChange={({ target }) => setFullName(target.value)}
+              label="Full Name"
+              placeholder="John Doe"
+              type="text"
+              required
+              className="focus:ring-purple-400 focus:border-purple-400 bg-white/20 text-white placeholder-white/70 border border-white/30"
+              labelClassName="text-white font-semibold"
+            />
+
+            <Input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              label="Email Address"
+              placeholder="john@example.com"
+              type="email"
+              required
+              className="focus:ring-purple-400 focus:border-purple-400 bg-white/20 text-white placeholder-white/70 border border-white/30"
+              labelClassName="text-white font-semibold"
+            />
+
+            <Input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              label="Password"
+              placeholder="Min 8 characters"
+              type="password"
+              required
+              className="focus:ring-purple-400 focus:border-purple-400 bg-white/20 text-white placeholder-white/70 border border-white/30"
+              labelClassName="text-white font-semibold"
+            />
+
+            {error && (
+              <p className="text-sm text-red-300 font-semibold text-center -mt-2">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600
+              text-white font-bold text-lg shadow-lg hover:from-indigo-700 hover:to-purple-700
+              transition duration-300 ease-in-out uppercase tracking-wide"
+            >
+              Sign Up
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-white/90 font-medium">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="font-semibold text-purple-200 hover:text-purple-100 underline"
+            >
+              Login
+            </Link>
+          </p>
+        </div>
       </div>
+
+      {/* Custom floating and glassmorphism style */}
+      <style>{`
+        @keyframes floating {
+          0%, 100% {
+            transform: translateY(0);
+            box-shadow: 0 0 20px rgba(128, 90, 213, 0.3), 0 0 40px rgba(128, 90, 213, 0.2);
+          }
+          50% {
+            transform: translateY(-15px);
+            box-shadow: 0 0 40px rgba(128, 90, 213, 0.5), 0 0 60px rgba(128, 90, 213, 0.3);
+          }
+        }
+
+        .animate-floating {
+          animation: floating 4s ease-in-out infinite;
+        }
+
+        .glass-card {
+          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.25);
+          backdrop-filter: blur(20px);
+          border-radius: 24px;
+          box-shadow:
+            0 4px 30px rgba(255, 255, 255, 0.1),
+            0 0 15px rgba(128, 90, 213, 0.3);
+          transition: box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+          box-shadow:
+            0 8px 40px rgba(255, 255, 255, 0.2),
+            0 0 60px rgba(128, 90, 213, 0.6);
+        }
+
+        .glass-card * {
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+        }
+      `}</style>
     </AuthLayout>
   );
 };
