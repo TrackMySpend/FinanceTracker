@@ -14,7 +14,16 @@ import Income from "./pages/Dashboard/Income";
 import UserProvider from "./context/UserContext"; 
 import { Toaster } from "react-hot-toast";
 import Logout from "./pages/Auth/Logout";
+import SettingPage from "./pages/Dashboard/SettingPage";
+import { useThemeStore } from "./pages/store/useThemeStore"; // Assuming you have a theme store
+import { useEffect } from "react";
 const App = () => {
+  const { theme } = useThemeStore();
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   return (
     <UserProvider>
       <div>
@@ -29,6 +38,7 @@ const App = () => {
           <Route path="/income" element={<Income />} />
           <Route path="/expense" element={<Expense />} />
 <Route path="/logout" element={<Logout />} />
+<Route path="/settings" element={<SettingPage />} />
 
         </Routes>
      
