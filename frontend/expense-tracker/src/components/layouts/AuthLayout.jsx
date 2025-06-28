@@ -7,7 +7,7 @@ const AuthLayout = ({ children }) => {
     <div className="flex min-h-screen">
       {/* Left Auth Section */}
       <div className="w-full md:w-[60vw] px-12 pt-8 pb-12 flex flex-col">
-        <h2 className="text-2xl font-bold text-violet-700 mb-6">Expense Tracker</h2>
+        <h2 className="text-2xl font-bold text-violet-700 mb-6">ExpenseNest</h2>
 
         {children}
       </div>
