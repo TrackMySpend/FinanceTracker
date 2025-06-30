@@ -14,7 +14,8 @@ import ExpenseTransactions from "../../components/Dashboard/ExpenseTransactions"
 import RecentIncome from "../../components/Dashboard/RecentIncome";
 import { LuHandCoins, LuWalletMinimal } from "react-icons/lu";
 import { IoMdCard } from "react-icons/io";
-// import { addThousandsSeperator } from "../../utils/helper"; // Uncomment if needed
+
+import { getDueReminders, dismissReminder } from "../../utils/reminderApi"; // Adjust the import path as necessary
 
 const Home = () => {
   useUserAuth();
@@ -22,6 +23,7 @@ const Home = () => {
 
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [reminders, setReminders] = useState([]);
 
   const fetchDashboardData = async () => {
     if (loading) return;
@@ -38,8 +40,27 @@ const Home = () => {
     }
   };
 
+  const fetchReminders = async () => {
+    try {
+      const { data } = await getDueReminders();
+      setReminders(data || []);
+    } catch (err) {
+      console.error("Failed to fetch reminders:", err);
+    }
+  };
+
+  const handleDismiss = async (id) => {
+    try {
+      await dismissReminder(id);
+      setReminders(reminders.filter((r) => r._id !== id));
+    } catch (err) {
+      console.error("Failed to dismiss reminder:", err);
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
+    fetchReminders();
   }, []);
 
   if (!dashboardData) {
@@ -49,6 +70,33 @@ const Home = () => {
   return (
     <DashboardLayout activeMenu="Dashboard">
       <div className="my-5 mx-auto">
+
+        {/* Reminder Alerts */}
+        {reminders.length > 0 && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 my-4 rounded">
+            <h3 className="text-lg font-semibold mb-2">🔔 You have reminders:</h3>
+            {reminders.map((reminder) => (
+              <div
+                key={reminder._id}
+                className="flex justify-between items-center border-b border-yellow-300 py-2"
+              >
+                <div>
+                  <strong>{reminder.title}</strong>
+                  <p className="text-sm">{reminder.description}</p>
+                  <p className="text-xs">
+                    Due: {new Date(reminder.nextDueDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDismiss(reminder._id)}
+                  className="ml-4 bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700"
+                >
+                  Dismiss
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Info Cards Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -76,7 +124,7 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
 
           <RecentTransactions
-            transactions={dashboardData?.recentTransactions }
+            transactions={dashboardData?.recentTransactions}
             onSeeMore={() => navigate("/expense")}
           />
 
@@ -91,10 +139,9 @@ const Home = () => {
             onSeeMore={() => navigate("/expense")}
           />
 
-         <Last30DaysExpenses
-  data={dashboardData?.last30DaysExpenses?.transactions || []}
-/>
-
+          <Last30DaysExpenses
+            data={dashboardData?.last30DaysExpenses?.transactions || []}
+          />
 
           <RecentIncomeWithChart
             data={dashboardData?.last60DaysIncome?.transactions?.slice(0, 4) || []}
@@ -102,8 +149,8 @@ const Home = () => {
           />
 
           <RecentIncome
-          transactions={dashboardData?.last60DaysIncome?.transactions || []}
-          onSeeMore={() => navigate("/income")}
+            transactions={dashboardData?.last60DaysIncome?.transactions || []}
+            onSeeMore={() => navigate("/income")}
           />
           
         </div>

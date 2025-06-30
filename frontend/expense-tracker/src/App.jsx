@@ -19,6 +19,7 @@ import Logout from "./pages/Auth/Logout";
 import SettingPage from "./pages/Dashboard/SettingPage";
 import { useThemeStore } from "./pages/store/useThemeStore"; // Assuming you have a theme store
 import { useEffect } from "react";
+import ReminderPage from "./pages/Reminder/ReminderPage"; // Assuming you have a reminder page
 const App = () => {
   const { theme } = useThemeStore();
 
@@ -43,6 +44,7 @@ const App = () => {
             <Route path="/expense" element={<Expense />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/settings" element={<SettingPage />} />
+            <Route path="/reminders" element={<ReminderPage />} />
         </Routes>
      
     </Router>

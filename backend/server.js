@@ -9,6 +9,7 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const app= express();
 // Middleware to serve static files from the React app
+const reminderRoutes = require("./routes/reminderRoutes");
 app.use(cors({
     origin:process.env.CLIENT_URL || "*",
     methods:["GET", "POST", "PUT", "DELETE"],
@@ -22,6 +23,8 @@ app.use("/api/v1/auth",authRoutes);
 app.use("/api/v1/income",incomeRoutes);
 app.use("/api/v1/expense",expenseRoutes);
 app.use("/api/v1/dashboard",dashboardRoutes);
+app.use("/api/v1/reminders", reminderRoutes);
+
 //serve uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const PORT = process.env.PORT || 5000;

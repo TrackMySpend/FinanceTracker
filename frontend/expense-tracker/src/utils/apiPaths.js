@@ -31,4 +31,11 @@ export const API_PATHS = {
   IMAGE: {
     UPLOAD_IMAGE: "/api/v1/auth/upload-image",
   },
+   
+  REMINDER: {
+    ADD: "/api/v1/reminders",
+    GET_DUE: "/api/v1/reminders/due",
+    GET_ALL: '/api/v1/reminders',
+    DISMISS: (reminderId) => `/api/v1/reminders/${reminderId}/dismiss`,
+  },
 };
