@@ -94,4 +94,26 @@ router.post('/:id/dismiss', protect, async (req, res) => {
   }
 });
 
+// DELETE /api/v1/reminders/:id
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    const reminder = await Reminder.findOne({
+      _id: req.params.id,
+      userId: req.user.id, // ensure the reminder belongs to the logged-in user
+    });
+
+    if (!reminder) {
+      return res.status(404).json({ message: 'Reminder not found' });
+    }
+
+    await reminder.deleteOne();
+
+    res.json({ message: 'Reminder deleted successfully' });
+  } catch (err) {
+    console.error('❌ Error deleting reminder:', err.message);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
 module.exports = router;

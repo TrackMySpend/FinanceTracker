@@ -14,3 +14,4 @@ export const getDueReminders = () => API.get('/due');
 export const getAllReminders = () => API.get('/all'); // ✅ New function
 export const addReminder = (data) => API.post('/', data);
 export const dismissReminder = (id) => API.post(`/${id}/dismiss`);
+export const deleteReminder = (id) => API.delete(`/${id}`);;

@@ -4,6 +4,7 @@ import {
   getDueReminders,
   getAllReminders,
   dismissReminder,
+  deleteReminder,
 } from '../../utils/reminderApi';
 import AddReminderForm from './AddReminder';
 
@@ -25,14 +26,27 @@ const ReminderPage = () => {
   const handleDismiss = async (id) => {
     try {
       await dismissReminder(id);
-      // Remove from dueReminders (since it's now snoozed)
       setDueReminders((prev) => prev.filter((r) => r._id !== id));
-      // Refresh all reminders to update nextDueDate
       fetchReminders();
     } catch (err) {
       console.error('Error dismissing reminder:', err);
     }
   };
+
+  const handleDelete = async (id) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this reminder?");
+  if (!confirmDelete) return;
+
+  try {
+    await deleteReminder(id);
+    alert("Reminder deleted successfully."); // or use a toast here
+    fetchReminders(); // Refresh
+  } catch (err) {
+    console.error('Error deleting reminder:', err);
+    alert("Failed to delete reminder. Please try again.");
+  }
+};
+
 
   useEffect(() => {
     fetchReminders();
@@ -44,6 +58,7 @@ const ReminderPage = () => {
         <h1 className="text-2xl font-bold mb-4">Set Reminders</h1>
         <AddReminderForm onReminderAdded={fetchReminders} />
 
+        {/* DUE REMINDERS */}
         <h2 className="text-xl font-semibold mt-8 mb-4">🔔 Due Reminders</h2>
         {dueReminders.length === 0 ? (
           <p className="text-gray-600">No due reminders!</p>
@@ -61,17 +76,26 @@ const ReminderPage = () => {
                     Due: {new Date(reminder.nextDueDate).toLocaleDateString()}
                   </p>
                 </div>
-                <button
-                  onClick={() => handleDismiss(reminder._id)}
-                  className="ml-4 bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm"
-                >
-                  Dismiss
-                </button>
+                <div className="flex flex-col space-y-2">
+                  <button
+                    onClick={() => handleDismiss(reminder._id)}
+                    className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-sm"
+                  >
+                    Dismiss
+                  </button>
+                  <button
+                    onClick={() => handleDelete(reminder._id)}
+                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
 
+        {/* ALL REMINDERS */}
         <h2 className="text-xl font-semibold mt-10 mb-4">📋 All Reminders</h2>
         {allReminders.length === 0 ? (
           <p className="text-gray-600">No reminders found.</p>
@@ -80,13 +104,21 @@ const ReminderPage = () => {
             {allReminders.map((reminder) => (
               <div
                 key={reminder._id}
-                className="bg-gray-100 border-l-4 border-gray-500 p-4 rounded"
+                className="bg-gray-100 border-l-4 border-gray-500 p-4 rounded flex justify-between items-start"
               >
-                <h3 className="font-bold">{reminder.title}</h3>
-                <p>{reminder.description}</p>
-                <p className="text-xs text-gray-500">
-                  Due: {new Date(reminder.nextDueDate).toLocaleDateString()}
-                </p>
+                <div>
+                  <h3 className="font-bold">{reminder.title}</h3>
+                  <p>{reminder.description}</p>
+                  <p className="text-xs text-gray-500">
+                    Due: {new Date(reminder.nextDueDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDelete(reminder._id)}
+                  className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
+                >
+                  Delete
+                </button>
               </div>
             ))}
           </div>
