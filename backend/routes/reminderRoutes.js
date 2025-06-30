@@ -4,20 +4,28 @@ const Reminder = require('../models/Reminder');
 const {protect} = require('../middleware/authMiddleware'); // Assuming you already have it
 
 // Add reminder
-router.post('/', protect , async (req, res) => {
+router.post('/', protect, async (req, res) => {
   try {
-    const { title, description, frequency } = req.body;
+    const { title, description, frequency, nextDueDate: clientDueDate } = req.body;
 
     if (!title || !frequency) {
       return res.status(400).json({ message: 'Title and frequency are required' });
     }
 
-    // 🔢 Calculate nextDueDate
-    const nextDueDate = new Date();
-    if (frequency === 'weekly') {
-      nextDueDate.setDate(nextDueDate.getDate() + 7);
-    } else if (frequency === 'monthly') {
-      nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+    let nextDueDate;
+    if (clientDueDate) {
+      nextDueDate = new Date(clientDueDate);
+      if (isNaN(nextDueDate.getTime())) {
+        return res.status(400).json({ message: 'Invalid date format for nextDueDate' });
+      }
+    } else {
+      // fallback logic if client does not provide nextDueDate
+      nextDueDate = new Date();
+      if (frequency === 'weekly') {
+        nextDueDate.setDate(nextDueDate.getDate() + 7);
+      } else if (frequency === 'monthly') {
+        nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+      }
     }
 
     const reminder = new Reminder({
@@ -25,7 +33,7 @@ router.post('/', protect , async (req, res) => {
       description,
       frequency,
       userId: req.user.id,
-      nextDueDate
+      nextDueDate,
     });
 
     await reminder.save();
@@ -36,6 +44,7 @@ router.post('/', protect , async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 // Get due reminders

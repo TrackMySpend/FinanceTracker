@@ -35,7 +35,7 @@ export const API_PATHS = {
   REMINDER: {
     ADD: "/api/v1/reminders",
     GET_DUE: "/api/v1/reminders/due",
-    GET_ALL: '/api/v1/reminders',
+    GET_ALL: '/api/v1/reminders/all',
     DISMISS: (reminderId) => `/api/v1/reminders/${reminderId}/dismiss`,
   },
 };

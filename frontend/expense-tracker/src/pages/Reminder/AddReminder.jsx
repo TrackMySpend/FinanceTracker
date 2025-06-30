@@ -6,15 +6,16 @@ const AddReminderForm = ({ onReminderAdded }) => {
     title: "",
     description: "",
     frequency: "weekly",
-    nextDueDate: "", // Added due date
+    nextDueDate: "", // due date as ISO yyyy-mm-dd string
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
   };
 
@@ -33,9 +34,13 @@ const AddReminderForm = ({ onReminderAdded }) => {
     setLoading(true);
 
     try {
+      // Send the form including nextDueDate to backend
       await addReminder(form);
+
       setMessage("✅ Reminder added successfully!");
-      onReminderAdded();
+      onReminderAdded(); // notify parent to refresh reminders
+
+      // Reset form
       setForm({
         title: "",
         description: "",
