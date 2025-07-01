@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
 import { FiSettings } from 'react-icons/fi';
 import { IoNotificationsOutline } from 'react-icons/io5';
+import { MdGroups } from 'react-icons/md'; // ✅ icon for Split Bill
 import { Link } from 'react-router-dom';
 import SideMenu from './SideMenu';
-import { getDueReminders } from '../../utils/reminderApi'; // Adjust the import path as necessary
+import { getDueReminders } from '../../utils/reminderApi'; // Adjust if needed
 
 const Navbar = ({ activeMenu }) => {
   const [openSideMenu, setOpenSideMenu] = useState(false);
@@ -39,7 +40,7 @@ const Navbar = ({ activeMenu }) => {
       </div>
 
       <div className="flex items-center gap-6">
-        {/* Reminder Bell Icon */}
+        {/* Reminders */}
         <Link to="/reminders" className="relative hover:text-primary">
           <IoNotificationsOutline className="text-xl" />
           {reminderCount > 0 && (
@@ -49,7 +50,12 @@ const Navbar = ({ activeMenu }) => {
           )}
         </Link>
 
-        {/* Settings Icon */}
+        {/* ✅ Split Bill */}
+        <Link to="/split-bill" className="hover:text-primary" title="Split Bill">
+          <MdGroups className="text-xl" />
+        </Link>
+
+        {/* Settings */}
         <Link to="/settings" className="hover:text-primary">
           <FiSettings className="text-xl" />
         </Link>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -13,28 +13,28 @@ import ResetPassword from "./pages/Auth/ResetPassword";
 import Home from "./pages/Dashboard/Home";
 import Expense from "./pages/Dashboard/Expense";
 import Income from "./pages/Dashboard/Income";
-import UserProvider from "./context/UserContext"; 
-import { Toaster } from "react-hot-toast";
 import Logout from "./pages/Auth/Logout";
 import SettingPage from "./pages/Dashboard/SettingPage";
-import { useThemeStore } from "./pages/store/useThemeStore"; // Assuming you have a theme store
-import { useEffect } from "react";
-import ReminderPage from "./pages/Reminder/ReminderPage"; // Assuming you have a reminder page
+import ReminderPage from "./pages/Reminder/ReminderPage";
+import SplitBillPage from "./pages/SplitBill/SplitBillPage";
+
+import UserProvider from "./context/UserContext";
+import { useThemeStore } from "./pages/store/useThemeStore";
+import { Toaster } from "react-hot-toast";
+
 const App = () => {
   const { theme } = useThemeStore();
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
   return (
     <UserProvider>
       <div>
-
- <Router>
-      
-        <Routes>
-          <Route path="/" element={<Root />} />
+        <Router>
+          <Routes>
+            <Route path="/" element={<Root />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -43,21 +43,20 @@ const App = () => {
             <Route path="/income" element={<Income />} />
             <Route path="/expense" element={<Expense />} />
             <Route path="/logout" element={<Logout />} />
-            <Route path="/settings" element={<SettingPage />} />
             <Route path="/reminders" element={<ReminderPage />} />
-        </Routes>
-     
-    </Router>
+            <Route path="/split-bill" element={<SplitBillPage />} /> {/* ✅ NEW ROUTE */}
+            <Route path="/settings" element={<SettingPage />} />
+          </Routes>
+        </Router>
       </div>
 
-      <Toaster 
-      toastOptions={{
-        className: "",
-        style:{
-          fontSize:'13px'
-
-        },
-      }}
+      <Toaster
+        toastOptions={{
+          className: "",
+          style: {
+            fontSize: "13px",
+          },
+        }}
       />
     </UserProvider>
   );
