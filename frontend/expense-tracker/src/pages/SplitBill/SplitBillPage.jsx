@@ -1,47 +1,46 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "../../utils/axiosInstance";
 import SplitBillForm from "../../components/SplitBill/SplitBillForm";
 import BalanceTable from "../../components/Charts/BalanceTable";
 import BalanceChart from "../../components/Charts/BalanceChart";
-import DashboardLayout from "../../components/layouts/DashboardLayout"; // ✅ import layout
+import DashboardLayout from "../../components/layouts/DashboardLayout";
 
 const SplitBillPage = () => {
   const [debts, setDebts] = useState([]);
+  const [users, setUsers] = useState([]);
 
-  // Fetch current split balances
+  const fetchUsers = async () => {
+    const res = await axios.get("/api/v1/auth/users");
+    setUsers(res.data);
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const fetchDebts = async () => {
-    try {
-      const response = await axios.get("/splitbills/debts");
-      setDebts(response.data);
-    } catch (error) {
-      console.error("Error fetching debts:", error);
-    }
+    const res = await axios.get("/api/v1/splitbills/debts");
+    setDebts(res.data);
   };
 
   useEffect(() => {
     fetchDebts();
   }, []);
 
+  const idToName = id => users.find(u => u._id === id)?.name || id;
+
+  const debtsWithNames = debts.map(d => ({
+    ...d,
+    fromName: idToName(d.from),
+    toName: idToName(d.to),
+  }));
+
   return (
-    <DashboardLayout activeMenu="Split Bill"> {/* ✅ Wrap with layout */}
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">💸 Split Bill</h1>
-
-        {/* Form to create a new split bill */}
-        <SplitBillForm onSuccess={fetchDebts} />
-
-        {/* List of balances */}
-        <div className="mt-10">
-          <h2 className="text-xl font-semibold mb-2">Who Owes Whom</h2>
-          <BalanceTable debts={debts} />
-        </div>
-
-        {/* Pie Chart visualization */}
-        <div className="mt-10 max-w-lg">
-          <h2 className="text-xl font-semibold mb-2">Debt Breakdown</h2>
-          <BalanceChart debts={debts} />
-        </div>
-      </div>
+    <DashboardLayout activeMenu="Split Bill">
+      <h1>💸 Split Bill</h1>
+      <SplitBillForm onSuccess={fetchDebts} />
+      <BalanceTable debts={debtsWithNames} />
+      <BalanceChart debts={debtsWithNames} />
     </DashboardLayout>
   );
 };

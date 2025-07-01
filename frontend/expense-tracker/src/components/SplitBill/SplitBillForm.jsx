@@ -16,24 +16,35 @@ const SplitBillForm = ({ onSuccess }) => {
       return;
     }
 
+    const participantIds = participants
+      .split(",")
+      .map((p) => p.trim())
+      .filter((p) => p.length === 24); // assuming valid ObjectId format
+
+    if (participantIds.length === 0) {
+      alert("Please enter at least one valid participant ID.");
+      return;
+    }
+
     const data = {
-      payer,
-      participants: participants.split(",").map((p) => p.trim()),
-      amount: parseFloat(amount),
-      description,
+      title: description || "Untitled Bill",
+      totalAmount: parseFloat(amount),
+      paidBy: payer,
+      participants: participantIds,
+      notes: description,
     };
 
     try {
       setLoading(true);
-      await axios.post("/splitbills/add", data);
+      await axios.post("/api/v1/splitbills", data);
       setPayer("");
       setParticipants("");
       setAmount("");
       setDescription("");
-      if (onSuccess) onSuccess(); // 🔄 refresh debts
+      if (onSuccess) onSuccess(); // Refresh debts or list
     } catch (err) {
-      console.error("Failed to add split bill", err);
-      alert("Something went wrong. Try again.");
+      console.error("❌ Failed to add split bill:", err);
+      alert("Something went wrong. Check console and make sure all IDs are correct.");
     } finally {
       setLoading(false);
     }
@@ -47,21 +58,21 @@ const SplitBillForm = ({ onSuccess }) => {
       <h2 className="text-lg font-semibold mb-4">Add a Split Expense</h2>
 
       <div className="mb-4">
-        <label className="block font-medium mb-1">Payer</label>
+        <label className="block font-medium mb-1">Payer (User ID)</label>
         <input
           type="text"
-          placeholder="e.g. Alice"
+          placeholder="e.g. 64ecdf0f50a4b43f80f3441a"
           value={payer}
-          onChange={(e) => setPayer(e.target.value)}
+          onChange={(e) => setPayer(e.target.value.trim())}
           className="w-full border px-3 py-2 rounded-md outline-none"
         />
       </div>
 
       <div className="mb-4">
-        <label className="block font-medium mb-1">Participants (comma separated)</label>
+        <label className="block font-medium mb-1">Participants (comma-separated User IDs)</label>
         <input
           type="text"
-          placeholder="e.g. Bob, Charlie"
+          placeholder="e.g. 64ecdf0f50a4b43f80f3441a, 64ecdf1f50a4b43f80f3441b"
           value={participants}
           onChange={(e) => setParticipants(e.target.value)}
           className="w-full border px-3 py-2 rounded-md outline-none"

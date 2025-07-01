@@ -38,4 +38,14 @@ export const API_PATHS = {
     GET_ALL: '/api/v1/reminders/all',
     DISMISS: (reminderId) => `/api/v1/reminders/${reminderId}/dismiss`,
   },
+
+  SPLIT_BILL: {
+    CREATE: "/api/v1/splitbills",         // POST
+    GET_DEBTS: "/api/v1/splitbills/debts" // GET
+  },
+
+  // ✅ NEW: Settlement Route
+  SETTLEMENT: {
+    SETTLE_UP: "/api/v1/settlements" // POST
+  }
 };
