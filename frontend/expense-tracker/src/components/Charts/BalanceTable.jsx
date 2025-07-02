@@ -18,8 +18,8 @@ const BalanceTable = ({ debts }) => {
         <tbody>
           {debts.map((debt, idx) => (
             <tr key={idx} className="hover:bg-gray-50">
-              <td className="px-4 py-2 border-b">{debt.from}</td>
-              <td className="px-4 py-2 border-b">{debt.to}</td>
+              <td className="px-4 py-2 border-b">{debt.fromName}</td>
+              <td className="px-4 py-2 border-b">{debt.toName}</td>
               <td className="px-4 py-2 border-b text-green-600 font-medium">
                 ₹{debt.amount}
               </td>

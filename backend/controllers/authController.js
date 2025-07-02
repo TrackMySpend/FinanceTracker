@@ -84,7 +84,10 @@ exports.getUserInfo = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
+exports.getAllUsers = async (req, res) => {
+  const users = await User.find({}, "_id fullName email");
+  res.json(users);
+};
 // @desc    Forgot Password
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;

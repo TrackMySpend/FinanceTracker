@@ -15,7 +15,7 @@ const BalanceChart = ({ debts }) => {
   }
 
   const data = {
-    labels: debts.map((d) => `${d.from} → ${d.to}`),
+    labels: debts.map((d) => `${d.fromName} → ${d.toName}`), // Use fromName & toName
     datasets: [
       {
         label: "Amount",

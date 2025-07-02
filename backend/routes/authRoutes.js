@@ -9,6 +9,7 @@ const {
   getUserInfo,
   forgotPassword,
   resetPassword,
+  getAllUsers,
 } = require('../controllers/authController');
 
 // Register route with optional profile image
@@ -25,7 +26,7 @@ router.post('/forgot-password', forgotPassword);
 
 // Reset password
 router.post('/reset-password', resetPassword);
-
+router.get("/users", getAllUsers);
 // Upload profile image separately (optional use)
 router.post('/upload-image', upload.single('image'), (req, res) => {
   if (!req.file) {

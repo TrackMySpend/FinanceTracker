@@ -1,84 +1,106 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "../../utils/axiosInstance";
+import Select from "react-select";
 
 const SplitBillForm = ({ onSuccess }) => {
-  const [payer, setPayer] = useState("");
-  const [participants, setParticipants] = useState("");
+  const [users, setUsers] = useState([]);
+  const [payer, setPayer] = useState(null);
+  const [participants, setParticipants] = useState([]);
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSplitBill = async (e) => {
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await axios.get("/api/v1/auth/users");
+        setUsers(res.data);
+      } catch (err) {
+        console.error("Failed to fetch users", err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  // Prepare options for react-select
+  const userOptions = users.map((user) => ({
+    value: user.fullName,
+    label: user.fullName,
+  }));
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!payer || !participants || !amount || isNaN(amount)) {
-      alert("Please fill in all fields correctly.");
+    if (!payer) {
+      alert("Please select a payer.");
+      return;
+    }
+    if (participants.length === 0) {
+      alert("Please select at least one participant.");
+      return;
+    }
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+      alert("Please enter a valid positive amount.");
       return;
     }
 
-    const participantIds = participants
-      .split(",")
-      .map((p) => p.trim())
-      .filter((p) => p.length === 24); // assuming valid ObjectId format
-
-    if (participantIds.length === 0) {
-      alert("Please enter at least one valid participant ID.");
-      return;
-    }
+    // Extract participant names as array of strings
+    const participantNames = participants.map((p) => p.value);
 
     const data = {
       title: description || "Untitled Bill",
-      totalAmount: parseFloat(amount),
-      paidBy: payer,
-      participants: participantIds,
+      totalAmount: Number(amount),
+      paidByName: payer.value,
+      participantNames,
       notes: description,
     };
 
     try {
       setLoading(true);
       await axios.post("/api/v1/splitbills", data);
-      setPayer("");
-      setParticipants("");
+      setPayer(null);
+      setParticipants([]);
       setAmount("");
       setDescription("");
-      if (onSuccess) onSuccess(); // Refresh debts or list
+      if (onSuccess) onSuccess();
     } catch (err) {
-      console.error("❌ Failed to add split bill:", err);
-      alert("Something went wrong. Check console and make sure all IDs are correct.");
+      console.error("Failed to add split bill:", err?.response?.data || err.message);
+      alert("Something went wrong. Check console for details.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSplitBill}
-      className="bg-white border rounded-md p-6 shadow-sm max-w-2xl"
-    >
+    <form onSubmit={handleSubmit} className="bg-white border rounded-md p-6 shadow-sm max-w-2xl">
       <h2 className="text-lg font-semibold mb-4">Add a Split Expense</h2>
 
+      {/* Payer select */}
       <div className="mb-4">
-        <label className="block font-medium mb-1">Payer (User ID)</label>
-        <input
-          type="text"
-          placeholder="e.g. 64ecdf0f50a4b43f80f3441a"
+        <label className="block font-medium mb-1">Payer Name</label>
+        <Select
+          options={userOptions}
           value={payer}
-          onChange={(e) => setPayer(e.target.value.trim())}
-          className="w-full border px-3 py-2 rounded-md outline-none"
+          onChange={setPayer}
+          placeholder="Select payer"
+          isClearable
         />
       </div>
 
+      {/* Participants multi-select */}
       <div className="mb-4">
-        <label className="block font-medium mb-1">Participants (comma-separated User IDs)</label>
-        <input
-          type="text"
-          placeholder="e.g. 64ecdf0f50a4b43f80f3441a, 64ecdf1f50a4b43f80f3441b"
+        <label className="block font-medium mb-1">Participants</label>
+        <Select
+          options={userOptions}
           value={participants}
-          onChange={(e) => setParticipants(e.target.value)}
-          className="w-full border px-3 py-2 rounded-md outline-none"
+          onChange={setParticipants}
+          placeholder="Select participants"
+          isMulti
+          closeMenuOnSelect={false}
         />
       </div>
 
+      {/* Amount */}
       <div className="mb-4">
         <label className="block font-medium mb-1">Amount</label>
         <input
@@ -92,6 +114,7 @@ const SplitBillForm = ({ onSuccess }) => {
         />
       </div>
 
+      {/* Description */}
       <div className="mb-6">
         <label className="block font-medium mb-1">Description (optional)</label>
         <input
