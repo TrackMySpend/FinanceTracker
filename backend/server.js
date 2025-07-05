@@ -2,6 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const http = require("http"); // ⬅️ Needed for socket.io
+const { Server } = require("socket.io");
+
 const connectDB = require("./config/db");
 
 // Route imports
@@ -10,42 +13,55 @@ const incomeRoutes = require("./routes/incomeRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
-
-// ✅ NEW routes for split bill
 const splitBillRoutes = require("./routes/splitBillRoutes");
 const settlementRoutes = require("./routes/settlementRoutes");
 
 const app = express();
+const server = http.createServer(app); // ⬅️ Create HTTP server
 
-// CORS setup
-app.use(cors({
+// ✅ Initialize socket.io
+const io = new Server(server, {
+  cors: {
     origin: process.env.CLIENT_URL || "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+  },
+});
+
+// Attach io to app so controllers can use it
+app.set("io", io);
+
+// Handle socket.io connections
+io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+  });
+});
+
+// Middleware
+app.use(cors({
+  origin: process.env.CLIENT_URL || "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
-
-// JSON middleware
 app.use(express.json());
-
-// Database connection
 connectDB();
 
-// Route middlewares
+// Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/income", incomeRoutes);
 app.use("/api/v1/expense", expenseRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/reminders", reminderRoutes);
-
-// ✅ Add these two lines
 app.use("/api/v1/splitbills", splitBillRoutes);
 app.use("/api/v1/settlements", settlementRoutes);
 
-// Serve uploads folder
+// Serve uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
