@@ -2,6 +2,6 @@ const express = require("express");
 const router = express.Router();
 const { settleUp } = require("../controllers/settlementController");
 
-router.post("/", settleUp);
+router.post("/settle-up", settleUp);
 
 module.exports = router;

@@ -5,6 +5,8 @@ const Transaction = require("../models/Transaction");
 const Expense = require("../models/Expense");
 
 // 📌 Create a new split bill
+
+
 exports.createSplitBill = async (req, res) => {
   try {
     const { title, totalAmount, paidByName, participantNames, notes } = req.body;
@@ -28,18 +30,18 @@ exports.createSplitBill = async (req, res) => {
       return res.status(400).json({ error: "Some participants not found" });
     }
 
-    const allSplitUsers = Array.from(new Set([
+    const allUserIds = Array.from(new Set([
       paidByUser._id.toString(),
       ...participantUsers.map(u => u._id.toString())
     ]));
 
-    const perPerson = Math.floor(totalAmount / allSplitUsers.length);
-    const remainder = totalAmount % allSplitUsers.length;
+    const perPerson = Math.floor(totalAmount / allUserIds.length);
+    const remainder = totalAmount % allUserIds.length;
 
-    const splits = allSplitUsers.map((userId, idx) => ({
+    const splits = allUserIds.map((userId, idx) => ({
       userId,
       paid: userId === paidByUser._id.toString() ? totalAmount : 0,
-      owes: perPerson + (idx === 0 ? remainder : 0), // add remainder to first person
+      owes: perPerson + (idx === 0 ? remainder : 0),
     }));
 
     const bill = new SplitBill({
@@ -51,13 +53,30 @@ exports.createSplitBill = async (req, res) => {
       notes,
     });
 
+    // ✅ Update balances: ensure all math is numeric (not string concatenation)
+    for (const split of splits) {
+      const user = users.find(u => u._id.toString() === split.userId);
+      if (!user) continue;
+
+      const currentBalance = Number(user.balance || 0);
+      const paid = Number(split.paid || 0);
+      const owes = Number(split.owes || 0);
+      const updatedBalance = currentBalance + (paid - owes);
+
+      user.balance = updatedBalance;
+      await user.save();
+    }
+
     await bill.save();
     res.status(201).json(bill);
   } catch (err) {
-    console.error("Error creating split bill:", err);
+    console.error("❌ Error creating split bill:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+
+
 
 // 📌 Get net debts for all users
 exports.getDebts = async (req, res) => {
@@ -76,7 +95,7 @@ exports.getDebts = async (req, res) => {
     const debts = calculateDebts(validSplits);
     res.json(debts);
   } catch (err) {
-    console.error("Error fetching debts:", err);
+    console.error("❌ Error fetching debts:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -96,6 +115,9 @@ exports.payBill = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    if (typeof payer.balance !== "number") payer.balance = 0;
+    if (typeof receiver.balance !== "number") receiver.balance = 0;
+
     if (payer.balance < amount) {
       console.log("❌ Insufficient balance");
       return res.status(400).json({ error: "Insufficient balance" });
@@ -103,18 +125,16 @@ exports.payBill = async (req, res) => {
 
     console.log("✅ Users found. Proceeding...");
 
-    // Step 2: Balance update
+    // Step 2: Update balances
     payer.balance -= amount;
     receiver.balance += amount;
 
     await payer.save();
     await receiver.save();
-    console.log("✅ Balances updated and saved.");
+    console.log("✅ Balances updated.");
 
     // Step 3: Update SplitBills
     const bills = await SplitBill.find({});
-    console.log("🔍 Fetched bills:", bills.length);
-
     for (const bill of bills) {
       const payerSplit = bill.splits.find(s => s.userId.toString() === payer._id.toString());
       const receiverSplit = bill.splits.find(s => s.userId.toString() === receiver._id.toString());
@@ -127,29 +147,29 @@ exports.payBill = async (req, res) => {
     }
 
     await Promise.all(bills.map(bill => bill.save()));
-    console.log("✅ Updated all bill splits");
+    console.log("✅ Bill splits updated.");
 
     // Step 4: Create Transaction
     const txn = await Transaction.create({
       from: payer.fullName,
       to: receiver.fullName,
       amount,
-      type: 'payment',
-      description: 'Debt settlement',
+      type: "payment",
+      description: "Debt settlement",
       date: new Date(),
     });
-    console.log("✅ Transaction created:", txn._id);
+    console.log("✅ Transaction logged:", txn._id);
 
     // Step 5: Create Expense
     const exp = await Expense.create({
       user: payer._id,
-      category: 'Debt Payment',
+      category: "Debt Payment",
       amount,
       date: new Date(),
     });
-    console.log("✅ Expense created:", exp._id);
+    console.log("✅ Expense logged:", exp._id);
 
-    // Step 6: Emit via Socket.IO
+    // Step 6: Emit real-time event
     const io = req.app.get("io");
     if (io) {
       io.emit("billPaid", {
@@ -158,15 +178,25 @@ exports.payBill = async (req, res) => {
         amount,
         message: `${from} paid ₹${amount} to ${to}`,
       });
-      console.log("📡 billPaid event emitted");
+      console.log("📡 Real-time event emitted");
     }
 
-    // Final step: Respond to client
-    res.status(200).json({ message: "Payment successful" });
-
+    res.status(200).json({
+      success: true,
+      message: "Payment successful",
+      transaction: txn,
+      expense: exp,
+      updatedBalances: {
+        [payer.fullName]: payer.balance,
+        [receiver.fullName]: receiver.balance,
+      },
+    });
   } catch (err) {
-    console.error("💥 Payment error:", err.message);
-    console.error("🧱 Stack trace:", err.stack);
+    console.error("💥 Payment error:", {
+      message: err.message,
+      stack: err.stack,
+      input: { from, to, amount },
+    });
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

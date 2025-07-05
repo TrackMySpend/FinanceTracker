@@ -3,14 +3,15 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
 
-// Generate JWT token
+// 🔐 Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
 
-// @desc    Register a new user
+// 🧾 Register a new user
 exports.registerUser = async (req, res) => {
   const { fullName, email, password } = req.body;
+
   const profileImageUrl = req.file
     ? `http://localhost:8000/uploads/${req.file.filename}`
     : null;
@@ -29,6 +30,7 @@ exports.registerUser = async (req, res) => {
       fullName,
       email,
       password,
+      balance: 0,
       profileImageUrl,
     });
 
@@ -45,7 +47,7 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-// @desc    Login user
+// 🔑 Login user
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -70,7 +72,7 @@ exports.loginUser = async (req, res) => {
   }
 };
 
-// @desc    Get authenticated user info
+// 👤 Get authenticated user info
 exports.getUserInfo = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -84,11 +86,19 @@ exports.getUserInfo = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// 👥 Get all users (name + balance)
 exports.getAllUsers = async (req, res) => {
-  const users = await User.find({}, "_id fullName email");
-  res.json(users);
+  try {
+    const users = await User.find({}, "_id fullName email balance");
+    res.json(users);
+  } catch (err) {
+    console.error("GetAllUsers Error:", err);
+    res.status(500).json({ message: "Failed to fetch users" });
+  }
 };
-// @desc    Forgot Password
+
+// 🔁 Forgot password - generate token & send email
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -118,7 +128,7 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-// @desc    Reset Password
+// 🔒 Reset password using token
 exports.resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 
